@@ -1,7 +1,7 @@
-## Interface: 90200
+## Interface: 90205
 ## Title: Pretty Reps
 ## Author: Sida2
-## Version: 1.08
+## Version: 1.09
 ## Notes: Display account-wide reputations on any character.
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
