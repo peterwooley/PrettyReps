@@ -1,5 +1,9 @@
 --[[
 			
+ ____  ____   __   _  _  ____  _  _    ____  ____  ____  ____ 
+(  _ \(  __) / _\ / )( \(_  _)( \/ )  (  _ \(  __)(  _ \/ ___)
+ ) _ ( ) _) /    \) \/ (  )(   )  /    )   / ) _)  ) __/\___ \
+(____/(____)\_/\_/\____/ (__) (__/    (__\_)(____)(__)  (____/
 
 								$$$$$$$\                       $$\     $$\                     $$$$$$$\                                
 								$$  __$$\                      $$ |    $$ |                    $$  __$$\                               
@@ -104,7 +108,6 @@ frame:SetScript("OnEvent", function(self, event, ...)
 			playerName, playerRealm = UnitName("player")
 			isAlliance = UnitFactionGroup("player") == "Alliance"
 			isHorde = UnitFactionGroup("player") == "Horde"
-			--CharacterFrameTab2:SetText("Pretty Reps")
 
 			HookScripts()
 			ModifyRepPanel()
@@ -230,7 +233,7 @@ function ReputationFrame_Refresh(self, offset)
 			end
 			
 			factionRow.standingText = factionStandingtext
-			factionRow.rolloverText = playerOptions["ShowNameOnHover"] and playerName or HIGHLIGHT_FONT_COLOR_CODE.." "..barValue.." / "..barMax..FONT_COLOR_CODE_CLOSE
+			factionRow.rolloverText = HIGHLIGHT_FONT_COLOR_CODE..""..barValue.."/"..barMax..FONT_COLOR_CODE_CLOSE
 			factionBar:SetMinMaxValues(0, barMax)
 			factionBar:SetValue(barValue)
 			local color = FACTION_BAR_COLORS[colorIndex]
@@ -248,8 +251,9 @@ function ReputationFrame_Refresh(self, offset)
 							factionBar:SetMinMaxValues(0, threshold)
 							factionBar:SetValue(barValue)
 							factionBar:SetStatusBarColor(0, 0.5, 0.9)
-							factionStanding:SetText("Paragon")
-							factionRow.rolloverText = HIGHLIGHT_FONT_COLOR_CODE.." "..barValue.." / "..barMax..FONT_COLOR_CODE_CLOSE
+							factionRow.standingText = "Paragon"
+							factionStanding:SetText(factionRow.standingText)
+							factionRow.rolloverText = HIGHLIGHT_FONT_COLOR_CODE..barValue.."/"..barMax..FONT_COLOR_CODE_CLOSE
 						end
 
 						if playerOptions["ShowParagonIcons"] and (not playerOptions["ParagonIconsRewardOnly"] or (not tooLowLevelForParagon and hasRewardPending)) then
@@ -408,14 +412,20 @@ function FactionRow_Enter(self)
 	end
 	_G[self:GetName().."ReputationBarHighlight1"]:Show()
 	_G[self:GetName().."ReputationBarHighlight2"]:Show()
-	if ( self.factionData.friendshipID ) then
-		-- ShowFriendshipReputationTooltip(self.factionData.friendshipID, self, "ANCHOR_BOTTOMRIGHT")
-	elseif (_G[self:GetName().."FactionName"]:IsTruncated()) then
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		GameTooltip:SetText(_G[self:GetName().."FactionName"]:GetText(), nil, nil, nil, nil, true)
-		GameTooltip:Show()
-	end
+
+	ShowReputationTooltip(self.factionData, self, "ANCHOR_BOTTOMRIGHT")
 end
+
+function ShowReputationTooltip(factionData, parent, anchor)
+	GameTooltip:SetOwner(parent, anchor);
+
+	GameTooltip:SetText(_G[parent:GetName().."FactionName"]:GetText(), nil, nil, nil, nil, true)
+	GameTooltip:AddLine(parent.standingText.." ("..parent.rolloverText..")", 1, 1, 1)
+	GameTooltip:AddLine("Attained by " .. factionData.playerName, nil, nil, nil, true); 
+
+	GameTooltip:Show();
+end
+
 
 function FactionRow_Leave(self)
 	if self.factionData ~= selectedFaction then
@@ -1023,20 +1033,6 @@ function ModifyRepPanel()
 		checkbox:SetScript("OnClick", function(self) 
 			playerOptions[self.optionsName] = self:GetChecked()
 			FlattenStructure()
-			Refresh()
-		end)
-
-		yPos = yPos - itemSpacing
-		-- Show Name On Hover
-		checkbox = CreateFrame("CheckButton", nil, PrettyRepsOptionsFrame, "ChatConfigCheckButtonTemplate")
-		checkbox:SetPoint("TOPLEFT", PrettyRepsOptionsFrame, 30, yPos)
-		checkbox.optionsName = "ShowNameOnHover"
-		checkbox:SetChecked(GetOption(checkbox.optionsName, false))
-		checkbox.Text:SetText("Show Name On Hover")
-		checkbox.tooltip = "Show the name of the character that earned the reputation."
-		playerOptions[checkbox.optionsName] = checkbox:GetChecked() 
-		checkbox:SetScript("OnClick", function(self) 
-			playerOptions[self.optionsName] = self:GetChecked()
 			Refresh()
 		end)
 
